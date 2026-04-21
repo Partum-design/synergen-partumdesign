@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIA - Experience Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], },
+                    colors: {
+                        synergen: { 50: '#f0fdfa', 100: '#ccfbf1', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a', },
+                        n8n: '#FF6D5A', supabase: '#3ECF8E', meta: '#1877F2', whatsapp: '#25D366'
+                    },
+                    animation: {
+                        'aurora': 'aurora 25s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    },
+                    keyframes: {
+                        aurora: {
+                            '0%, 100%': { transform: 'rotate(0deg) scale(1)' },
+                            '50%': { transform: 'rotate(180deg) scale(1.5)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        .scale-in { animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.95); }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        
+        /* Tabs Structure */
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; animation: fadeIn 0.4s ease-out forwards; }
+        
+        /* Glassmorphism Classes */
+        .glass-base {
+            background: rgba(11, 15, 25, 0.7);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-card {
+            background: rgba(20, 27, 40, 0.6);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Simulador Steps */
+        .step-hidden { display: none !important; }
+        .step-active { display: flex !important; animation: slideUp 0.6s ease-out forwards; }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+        /* General layout protections */
+        .app-overlay-inner { height: 100vh; height: 100dvh; } /* Handle mobile browser bars */
+
+        /* WA Bubbles */
+        .chat-bubble-receive { background: #2A3942; color: white; border-radius: 0 12px 12px 12px; position: relative; }
+        .chat-bubble-receive::before { content: ''; position: absolute; top: 0; left: -8px; border-top: 10px solid #2A3942; border-left: 10px solid transparent; }
+        .chat-bubble-send { background: #005C4B; color: white; border-radius: 12px 0 12px 12px; position: relative; }
+        .chat-bubble-send::before { content: ''; position: absolute; top: 0; right: -8px; border-top: 10px solid #005C4B; border-right: 10px solid transparent; }
+        
+        /* Node Pulse */
+        .node-pulse::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: inherit; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; z-index: -1; opacity: 0.6; }
+
+        /* Background Gradient Animation */
+        .aurora-bg { position: fixed; inset: -50%; z-index: -2; background: linear-gradient(to bottom right, #020617, #060e20); }
+        .aurora-glow-1 { position: absolute; top: 20%; left: 30%; width: 45vw; height: 45vw; background: radial-gradient(circle, rgba(20,184,166,0.13) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; opacity: 0.8; }
+        .aurora-glow-2 { position: absolute; bottom: 10%; right: 20%; width: 55vw; height: 55vw; background: radial-gradient(circle, rgba(45,100,240,0.12) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; opacity: 0.8; }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen overflow-hidden selection:bg-synergen-500 selection:text-white relative bg-slate-950 font-sans">
+
+    <!-- AURORA BACKGROUND -->
+    <div class="aurora-bg">
+        <div class="aurora-glow-1 animate-aurora"></div>
+        <div class="aurora-glow-2 animate-aurora" style="animation-direction: reverse; animation-duration: 30s;"></div>
+    </div>
+    <div class="fixed inset-0 z-[-1] opacity-[0.03]" style="background-image: linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+    <!-- MAIN LANDING PAGE -->
+    <main id="landing-page" class="absolute inset-0 flex flex-col items-center justify-center p-6 z-10 transition-opacity duration-700 ease-in-out">
+        <div class="w-full max-w-3xl text-center space-y-8 animate-float">
+            <!-- Partum & Synergen Logos Badge -->
+            <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass-base text-xs font-bold uppercase mb-4 text-slate-300 mx-auto w-max max-w-full shadow-lg">
+                <span class="w-2 h-2 rounded-full bg-synergen-400 animate-pulse shrink-0"></span>
+                <span class="truncate">Synergen Talent</span> 
+                <span class="opacity-40 text-[10px]">x</span> 
+                <span class="truncate">Partum Design</span>
+            </div>
+            
+            <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter mix-blend-plus-lighter">
+                Evoluciona tu <br class="hidden sm:block">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-synergen-400 via-blue-400 to-indigo-500 pb-2 drop-shadow-sm">Reclutamiento</span>
+            </h1>
+            
+            <p class="text-base sm:text-lg lg:text-xl text-slate-400 font-light max-w-xl mx-auto leading-relaxed">
+                Conoce a <strong class="text-white font-bold">LIA</strong>. Una infraestructura IA robusta basada en n8n que perfilará y evaluará a tus candidatos automáticamente.
+            </p>
+            
+            <div class="pt-8">
+                <button onclick="startApp()" class="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white text-slate-950 rounded-full font-bold text-base sm:text-lg overflow-hidden transition-transform hover:scale-[1.02] active:scale-95 shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:shadow-[0_0_60px_rgba(20,184,166,0.5)] w-full sm:w-auto">
+                    <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-synergen-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></span>
+                    <i class="fas fa-play text-synergen-500 group-hover:text-white transition-colors relative z-10 top-[1px]"></i>
+                    <span class="relative z-10 group-hover:text-white transition-colors tracking-wide">Iniciar Experiencia LIA</span>
+                </button>
+            </div>
+            
+            <!-- Logos preview -->
+            <div class="pt-12 flex items-center justify-center gap-6 opacity-60">
+                <img src="logosynergen.png" alt="Synergen" class="h-8 sm:h-10 object-contain grayscale hover:grayscale-0 transition-all">
+                <div class="w-px h-8 bg-slate-700"></div>
+                <img src="logopartum.png" alt="Partum Design" class="h-6 sm:h-8 object-contain grayscale hover:grayscale-0 transition-all">
+            </div>
+        </div>
+    </main>
+
+    <!-- THE APP OVERLAY (MODAL FULL SCREEN) -->
+    <div id="app-overlay" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-500 bg-slate-950/80 backdrop-blur-xl">
+        
+        <!-- App Container -->
+        <div class="w-full h-full sm:p-4 md:p-6 lg:p-8 flex items-center justify-center app-overlay-inner">
+            <div class="w-full h-full max-w-[1400px] glass-base sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden relative border-0 sm:border border-slate-700/50">
+                
+                <!-- App Header -->
+                <header class="flex flex-col sm:flex-row items-center justify-between border-b border-white/5 bg-slate-900/40 px-4 sm:px-8 py-3 sm:py-5 z-20 shrink-0 gap-3">
+                    
+                    <!-- Branding (Left) -->
+                    <div class="flex items-center justify-between w-full sm:w-auto">
+                        <div class="flex items-center gap-4 bg-slate-800/50 py-1.5 px-3 rounded-2xl border border-white/5">
+                            <img src="logosynergen.png" alt="Synergen" class="h-6 sm:h-7 object-contain drop-shadow">
+                            <div class="w-px h-6 bg-slate-700"></div>
+                            <span class="font-bold text-lg tracking-wider text-white">LIA <span class="text-synergen-500">Demo</span></span>
+                        </div>
+                        <button onclick="closeApp()" class="sm:hidden w-10 h-10 rounded-full bg-slate-800/80 text-slate-400 flex items-center justify-center hover:bg-slate-700 hover:text-white transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Main Tab Navigation -->
+                    <nav class="flex p-1 bg-slate-950/60 rounded-[1.5rem] border border-white/5 w-full sm:w-auto overflow-x-auto custom-scrollbar snap-x">
+                        <button class="tab-btn active shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-bold text-white bg-slate-800 shadow-md transition-all flex items-center gap-2 border border-slate-600 snap-center" data-target="tab-workflow" onclick="switchTab('tab-workflow')">
+                            <i class="fas fa-route text-synergen-400"></i> <span class="hidden md:inline">Flujo Automatizado</span><span class="md:hidden">Flujo</span>
+                        </button>
+                        <button class="tab-btn shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2 border border-transparent snap-center" data-target="tab-business" onclick="switchTab('tab-business')">
+                            <i class="fas fa-briefcase text-blue-400"></i> Modelo De Negocio
+                        </button>
+                        <button class="tab-btn shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2 border border-transparent snap-center" data-target="tab-scalability" onclick="switchTab('tab-scalability')">
+                            <i class="fas fa-layer-group text-purple-400"></i> Escalabilidad
+                        </button>
+                        <button class="tab-btn shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2 border border-transparent snap-center" data-target="tab-tech" onclick="switchTab('tab-tech')">
+                            <i class="fas fa-shield-alt text-amber-500"></i> Mantenimiento
+                        </button>
+                    </nav>
+
+                    <!-- Close button Desktop -->
+                    <button onclick="closeApp()" class="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full glass-card hover:bg-white/10 text-slate-300 hover:text-white transition-all text-sm font-bold border border-white/10">
+                        Cerrar <i class="fas fa-power-off text-red-500 text-xs"></i>
+                    </button>
+                </header>
+
+                <!-- APP CONTENT AREA -->
+                <div class="flex-1 overflow-y-auto overflow-x-hidden relative custom-scrollbar bg-slate-900/20 pb-12 sm:pb-0">
+                    
+                    <!-- ============================================== -->
+                    <!-- TAB 1: FLUJO DE TRABAJO (SIMULADOR)            -->
+                    <!-- ============================================== -->
+                    <div id="tab-workflow" class="tab-content active flex-col p-4 sm:p-8 md:p-10 w-full max-w-5xl mx-auto min-h-full">
+                        
+                        <div class="text-center mb-8 sm:mb-10 slide-up">
+                            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-3">La Ruta del Candidato</h2>
+                            <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">Sigue el viaje en tiempo real. Observa cómo LIA gestiona autónomamente el ciclo de vida del reclutamiento.</p>
+                        </div>
+
+                        <!-- Progress Stepper (Mobile Scrollable) -->
+                        <div class="w-full overflow-x-auto custom-scrollbar pb-4 mb-4 sm:mb-8 sm:overflow-visible">
+                            <div class="glass-card rounded-[1.5rem] p-3 sm:p-4 flex justify-between items-center relative z-10 max-w-4xl mx-auto w-full min-w-[500px]">
+                                <div class="absolute inset-y-0 left-[8%] right-[8%] top-1/2 -translate-y-1/2 h-1 bg-slate-800 -z-10 rounded-full"></div>
+                                <div class="absolute inset-y-0 left-[8%] top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-synergen-400 to-blue-500 transition-all duration-700 ease-in-out z-0 rounded-full shadow-[0_0_15px_rgba(20,184,166,0.5)]" id="progress-line" style="width: 0%"></div>
+                                
+                                <div class="flex flex-col items-center relative z-10 cursor-pointer group w-1/6" id="nav-step-1" onclick="if(currentStep>1) resetDemo(true)">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg sm:text-xl transition-all duration-300 border border-slate-700 shadow-lg" id="icon-step-1"><i class="fab fa-facebook-f"></i></div>
+                                    <span class="text-[9px] sm:text-[11px] mt-2 font-bold uppercase tracking-wider text-slate-500" id="text-step-1">Ads</span>
+                                </div>
+                                <div class="flex flex-col items-center relative z-10 opacity-50 w-1/6" id="nav-step-2">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg sm:text-xl transition-all border border-slate-700 shadow-lg" id="icon-step-2"><i class="fab fa-whatsapp"></i></div>
+                                    <span class="text-[9px] sm:text-[11px] mt-2 font-bold uppercase tracking-wider text-slate-500" id="text-step-2">Chat</span>
+                                </div>
+                                <div class="flex flex-col items-center relative z-10 opacity-50 w-1/6" id="nav-step-3">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center transition-all border border-slate-700 shadow-lg" id="icon-step-3"><img src="https://n8n.io/favicon.ico" class="w-5 h-5 sm:w-6 sm:h-6 opacity-60 grayscale transition-all" id="icon-n8n-img"></div>
+                                    <span class="text-[9px] sm:text-[11px] mt-2 font-bold uppercase tracking-wider text-slate-500" id="text-step-3">n8n</span>
+                                </div>
+                                <div class="flex flex-col items-center relative z-10 opacity-50 w-1/6" id="nav-step-4">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg sm:text-xl transition-all border border-slate-700 shadow-lg" id="icon-step-4"><i class="fas fa-database text-supabase"></i></div>
+                                    <span class="text-[9px] sm:text-[11px] mt-2 font-bold uppercase tracking-wider text-slate-500" id="text-step-4">Datos</span>
+                                </div>
+                                <div class="flex flex-col items-center relative z-10 opacity-50 w-1/6" id="nav-step-5">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg sm:text-xl transition-all border border-slate-700 shadow-lg" id="icon-step-5"><i class="fas fa-brain"></i></div>
+                                    <span class="text-[9px] sm:text-[11px] mt-2 font-bold uppercase tracking-wider text-slate-500" id="text-step-5">Test</span>
+                                </div>
+                                <div class="flex flex-col items-center relative z-10 opacity-50 w-1/6" id="nav-step-6">
+                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg sm:text-xl transition-all border border-slate-700 shadow-lg" id="icon-step-6"><i class="fas fa-flag-checkered"></i></div>
+                                    <span class="text-[9px] sm:text-[11px] mt-2 font-bold uppercase tracking-wider text-slate-500" id="text-step-6">Final</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Simulator Canvas -->
+                        <div class="flex-1 glass-card border flex-col rounded-[2rem] p-4 sm:p-8 lg:p-12 relative overflow-hidden flex shadow-[0_20px_50px_rgba(0,0,0,0.3)] items-center justify-center min-h-[500px]">
+                            
+                            <!-- SIM: Meta Ads (STEP 1) -->
+                            <div id="step-1" class="step-active w-full h-full flex-col justify-center items-center">
+                                <div class="bg-[#242526] w-full max-w-sm rounded-[1.25rem] overflow-hidden shadow-2xl mx-auto transform hover:-translate-y-2 transition-transform duration-300 border border-[#3A3B3C]">
+                                    <div class="px-4 py-3 flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden border border-slate-600 p-1">
+                                                <img src="logosynergen.png" alt="ST" class="w-full h-full object-contain">
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-[14px] text-[#E4E6EB] leading-none">Synergen Talent</p>
+                                                <p class="text-[12px] text-[#B0B3B8] flex items-center gap-1 mt-1">Publicidad <i class="fas fa-globe-americas text-[10px]"></i></p>
+                                            </div>
+                                        </div>
+                                        <i class="fas fa-ellipsis-h text-[#B0B3B8]"></i>
+                                    </div>
+                                    <div class="px-4 pb-3 text-[14px] text-[#E4E6EB] leading-snug">
+                                        ¡Únete a la élite tecnológica! 🚀 Proceso automatizado por LIA. Aplica 100% digital e interactivo desde tu WhatsApp.
+                                    </div>
+                                    <div class="relative w-full aspect-[4/3] bg-black overflow-hidden group cursor-pointer" onclick="goToStep(2)">
+                                        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tech" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700">
+                                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                                            <div class="w-16 h-16 rounded-full bg-whatsapp/20 backdrop-blur-md flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-all border border-whatsapp/50">
+                                                <i class="fab fa-whatsapp text-4xl text-whatsapp"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-[#242526] px-4 py-3 flex items-center justify-between border-t border-[#3A3B3C] cursor-pointer hover:bg-[#3A3B3C] transition" onclick="goToStep(2)">
+                                        <div>
+                                            <p class="text-[12px] text-[#B0B3B8] uppercase tracking-wide">CHAT AHORA</p>
+                                            <p class="font-bold text-[15px] text-[#E4E6EB]">Envíanos un mensaje</p>
+                                        </div>
+                                        <button class="bg-[#3A3B3C] hover:bg-[#4E4F50] text-[#E4E6EB] px-4 py-2 rounded-lg font-semibold text-sm transition-colors flex items-center gap-2">
+                                            Aplicar <i class="fab fa-whatsapp text-whatsapp text-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-8 text-slate-400 text-sm animate-ping-slow w-full text-center tracking-wide font-medium bg-white/5 py-2 px-6 rounded-full border border-white/10 w-fit mx-auto cursor-pointer" onclick="goToStep(2)">
+                                    <i class="fas fa-hand-pointer text-synergen-400 mr-2"></i> Toca el anuncio para iniciar chat
+                                </div>
+                            </div>
+
+                            <!-- SIM: WhatsApp (STEP 2) -->
+                            <div id="step-2" class="step-hidden w-full max-w-[400px] h-full flex-col mx-auto rounded-[2rem] overflow-hidden shadow-2xl border border-slate-700 bg-[#0B141A]">
+                                <div class="bg-[#202C33] px-3 py-3 flex items-center gap-3 relative z-10 shrink-0 shadow-md">
+                                    <i class="fas fa-arrow-left text-slate-300 ml-1"></i>
+                                    <div class="relative ml-1">
+                                        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-synergen-400 to-blue-600 flex items-center justify-center shadow-inner text-white p-2">
+                                            <img src="logosynergen.png" class="object-contain w-full h-full filter brightness-0 invert">
+                                        </div>
+                                        <div class="absolute bottom-0 right-0 w-3 h-3 bg-whatsapp rounded-full border-2 border-[#202C33]"></div>
+                                    </div>
+                                    <div class="flex-1 overflow-hidden">
+                                        <p class="font-bold text-white text-[16px] leading-tight truncate">LIA - Synergen</p>
+                                        <p class="text-xs text-whatsapp/90 font-medium truncate" id="wa-status">en línea</p>
+                                    </div>
+                                    <div class="flex gap-4 text-slate-300 text-lg mr-2">
+                                        <i class="fas fa-video"></i><i class="fas fa-phone-alt"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 flex-1 overflow-y-auto relative custom-scrollbar flex flex-col scroll-smooth h-[380px]" id="chat-container">
+                                    <div class="absolute inset-0 opacity-[0.04] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M2 2h2v2H2zm4 4h2v2H6zm4 4h2v2h-2zm4 4h2v2h-2z\' fill=\'%23ffffff\' fill-rule=\'evenodd\' fill-opacity=\'1\'/%3E%3C/svg%3E');"></div>
+                                    <div class="text-center mb-4 mt-2"><span class="bg-[#182229] text-[11px] text-slate-400 py-1.5 px-3 rounded-lg uppercase tracking-wider font-semibold shadow-sm border border-slate-800/50">Hoy</span></div>
+                                    <div id="typing-indicator" class="hidden self-start mb-4 bg-[#2A3942] rounded-[16px] rounded-tl-sm px-4 py-3 relative w-max shadow-sm">
+                                        <div class="flex gap-1.5 items-center h-2">
+                                            <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
+                                            <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
+                                            <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-[#202C33] p-2 flex gap-2 w-full shrink-0 items-end pb-4 pt-3">
+                                    <div class="w-10 h-10 flex items-center justify-center text-slate-400 text-2xl mb-0.5"><i class="far fa-smile"></i></div>
+                                    <div class="flex-1 bg-[#2A3942] rounded-3xl min-h-[44px] flex items-center px-4 relative overflow-hidden border border-[#3A4952]">
+                                        <p class="text-slate-500 text-[15px] w-full bg-transparent outline-none py-2.5">Mensaje...</p>
+                                        <div id="chat-actions" class="absolute inset-0 bg-[#2A3942] items-center justify-center px-1 hidden z-10">
+                                            <button onclick="sendUserMessage('¡Hola! Me interesa la vacante 👍')" class="w-full bg-whatsapp text-[#0B141A] hover:bg-[#1DA851] font-bold py-2 px-4 rounded-full transition-transform active:scale-95 shadow-md text-sm truncate flex items-center justify-center gap-2 border border-green-500/50">¡Hola! Me interesa la vacante <i class="fas fa-paper-plane"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-full bg-[#00A884] flex items-center justify-center text-white shrink-0 shadow-md text-lg"><i class="fas fa-microphone"></i></div>
+                                </div>
+                            </div>
+
+                            <!-- SIM: n8n (STEP 3) -->
+                            <div id="step-3" class="step-hidden w-full h-full flex-col justify-center items-center">
+                                <div class="text-center mb-6 sm:mb-10 relative">
+                                    <h3 class="text-2xl sm:text-3xl font-bold text-white mb-2 flex items-center justify-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1.5 shadow-[0_0_20px_rgba(255,109,90,0.3)]"><img src="https://n8n.io/favicon.ico" class="w-full h-full object-contain"></div> n8n
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-slate-400 font-light px-4">Webhook recibe payload e invoca LLMs privadamente.</p>
+                                </div>
+                                
+                                <div class="w-full max-w-2xl glass-base rounded-[2rem] p-6 sm:p-12 shadow-[0_0_50px_rgba(255,109,90,0.05)] flex flex-col sm:flex-row items-center justify-around relative font-mono text-xs overflow-hidden min-h-[300px]">
+                                    <div class="hidden sm:block absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#FF6D5A]/20 to-transparent"></div>
+                                    
+                                    <div class="flex flex-col items-center relative z-20 group mb-8 sm:mb-0">
+                                        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-slate-400 mb-3 transition-all duration-500 shadow-xl relative" id="node-webhook">
+                                            <i class="fab fa-whatsapp text-2xl"></i>
+                                        </div>
+                                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full shadow-md">Webhook</span>
+                                    </div>
+                                    
+                                    <div class="w-1 h-8 sm:w-16 sm:h-1.5 bg-slate-800 relative rounded-full overflow-hidden shadow-inner flex-shrink-0">
+                                        <div class="absolute inset-x-0 top-0 sm:inset-y-0 sm:left-0 bg-[#FF6D5A] sm:w-0 h-0 sm:h-full transition-all duration-700" id="line-1"></div>
+                                    </div>
+
+                                    <div class="flex flex-col items-center relative z-20 group mb-8 sm:mb-0">
+                                        <div class="absolute -top-12 bg-slate-800 text-[#FF6D5A] px-3 py-1.5 rounded-lg font-bold border border-[#FF6D5A]/50 shadow-[0_5px_20px_rgba(255,109,90,0.3)] opacity-0 transition-all duration-300 whitespace-nowrap hidden sm:block transform translate-y-2" id="n8n-gpt-label">GPT-4 JSON Extract</div>
+                                        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-[2rem] bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-slate-400 mb-3 transition-all duration-500 shadow-2xl relative" id="node-ai">
+                                            <i class="fas fa-brain text-3xl"></i>
+                                        </div>
+                                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full shadow-md">Core AI</span>
+                                    </div>
+
+                                    <div class="hidden sm:flex flex-col w-12 relative h-28">
+                                        <div class="absolute top-2 left-0 w-full h-[2px] bg-slate-800 transform origin-left -rotate-[35deg]"><div class="absolute inset-y-0 left-0 bg-[#3ECF8E] w-0 transition-all duration-700 delay-100" id="line-2a"></div></div>
+                                        <div class="absolute bottom-2 left-0 w-full h-[2px] bg-slate-800 transform origin-left rotate-[35deg]"><div class="absolute inset-y-0 left-0 bg-whatsapp w-0 transition-all duration-700 delay-100" id="line-2b"></div></div>
+                                    </div>
+                                    <div class="sm:hidden w-1 h-8 bg-slate-800 relative rounded-full overflow-hidden mb-8 flex-shrink-0">
+                                        <div class="absolute inset-x-0 top-0 bg-[#FF6D5A] h-0 transition-all duration-700" id="line-mob"></div>
+                                    </div>
+
+                                    <div class="flex flex-row sm:flex-col gap-6 sm:justify-between sm:h-44 relative z-20 w-fit">
+                                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                                            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-slate-400 transition-all duration-500 shadow-md" id="node-db">
+                                                <i class="fas fa-database text-xl"></i>
+                                            </div>
+                                            <span class="text-[10px] sm:text-xs text-slate-500 font-bold">Supabase</span>
+                                        </div>
+                                        <div class="flex flex-col sm:flex-row items-center gap-3">
+                                            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-slate-400 transition-all duration-500 shadow-md" id="node-reply">
+                                                <i class="fab fa-whatsapp text-xl"></i>
+                                            </div>
+                                            <span class="text-[10px] sm:text-xs text-slate-500 font-bold">Reply WA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SIM: Supabase (STEP 4) -->
+                            <div id="step-4" class="step-hidden w-full h-full flex-col justify-center items-center">
+                                 <div class="w-full max-w-3xl glass-card rounded-2xl overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] font-mono text-sm relative border border-slate-700">
+                                    <div class="bg-slate-900 px-4 sm:px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex gap-2"><div class="w-3.5 h-3.5 rounded-full bg-red-500/80"></div><div class="w-3.5 h-3.5 rounded-full bg-amber-500/80"></div><div class="w-3.5 h-3.5 rounded-full bg-green-500/80"></div></div>
+                                            <span class="text-[#3ECF8E] font-bold text-sm sm:text-base tracking-wide flex items-center gap-2"><i class="fas fa-database"></i> public.leads_funnel</span>
+                                        </div>
+                                    </div>
+                                    <div class="w-full overflow-x-auto pb-2">
+                                        <table class="w-full text-left text-slate-300 min-w-[600px]">
+                                            <thead class="bg-slate-900/50 text-slate-500 uppercase text-[11px] font-bold tracking-widest border-b border-slate-800">
+                                                <tr>
+                                                    <th class="px-6 py-4">id</th>
+                                                    <th class="px-6 py-4">nombre_candidato</th>
+                                                    <th class="px-6 py-4">telefono</th>
+                                                    <th class="px-6 py-4">metadata_json</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-800 bg-slate-950/30">
+                                                <tr class="hover:bg-slate-800/30 transition-colors">
+                                                    <td class="px-6 py-4 text-slate-500">1041</td>
+                                                    <td class="px-6 py-4 font-semibold text-slate-300">Fernando G.</td>
+                                                    <td class="px-6 py-4 font-mono text-xs opacity-70">+5255448...</td>
+                                                    <td class="px-6 py-4 text-[11px] text-slate-500 opacity-60 font-mono tracking-tighter">{"puesto":"Senior","origen":"Organic"}</td>
+                                                </tr>
+                                                <tr id="db-new-row" class="bg-[#3ECF8E]/10" style="opacity: 0; transform: translateY(15px);">
+                                                    <td class="px-6 py-4 text-[#3ECF8E] font-bold text-base">1042</td>
+                                                    <td class="px-6 py-4 font-bold text-white tracking-wide">Usuario Web Demo</td>
+                                                    <td class="px-6 py-4 text-synergen-400 font-mono text-xs">+5201101...</td>
+                                                    <td class="px-6 py-4 text-[11px] font-bold text-[#3ECF8E] tracking-tighter w-48 truncate">{"estado":"En proceso","score":null,"evaluacion":true}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="absolute inset-0 border-[3px] border-[#3ECF8E]/0 pointer-events-none rounded-2xl transition-all duration-300" id="db-flash"></div>
+                                </div>
+                            </div>
+
+                            <!-- SIM: Test Platform (STEP 5) -->
+                            <div id="step-5" class="step-hidden w-full h-full flex-col justify-center items-center">
+                                <div class="w-full max-w-lg bg-white rounded-[24px] overflow-hidden shadow-2xl flex flex-col h-[550px] relative font-sans">
+                                    <div class="bg-[#f1f5f9] flex items-center px-4 py-3 gap-4 border-b border-slate-300">
+                                        <div class="flex gap-1.5"><div class="w-3 h-3 rounded-full bg-slate-300"></div><div class="w-3 h-3 rounded-full bg-slate-300"></div><div class="w-3 h-3 rounded-full bg-slate-300"></div></div>
+                                        <div class="flex-1 bg-white rounded-lg py-1.5 px-4 text-[11px] sm:text-xs font-semibold text-slate-500 border border-slate-200 flex items-center gap-2 shadow-sm truncate">
+                                            <i class="fas fa-lock text-slate-400"></i> portal.synergentalent.com/eval/
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-6 sm:p-8 flex-1 flex flex-col bg-slate-50">
+                                        <div class="text-center mb-6">
+                                            <img src="logosynergen.png" class="h-8 mx-auto mb-4 object-contain opacity-80 filter brightness-0">
+                                            <h4 class="text-slate-800 font-black text-2xl tracking-tight">Evaluación Lógica</h4>
+                                            <div class="w-full bg-slate-200 h-2 rounded-full mt-5 overflow-hidden"><div class="bg-synergen-600 h-full w-[95%] rounded-full"></div></div>
+                                            <p class="text-[11px] text-synergen-600 font-bold mt-2 uppercase tracking-widest">Pregunta Final 30/30</p>
+                                        </div>
+                                        
+                                        <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm mb-auto relative">
+                                            <div class="absolute -top-3 -left-3 w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold shadow-sm">Q</div>
+                                            <p class="text-slate-700 font-bold text-[15px] sm:text-base mb-6 leading-relaxed mt-2 text-center">
+                                                Si todas las automatizaciones son rápidas, y algunas interacciones requieren IA. ¿Qué es verdadero?
+                                            </p>
+                                            <div class="space-y-3">
+                                                <button class="w-full text-left px-5 py-4 border-2 border-slate-100 rounded-xl hover:border-slate-300 text-sm xl:text-[15px] text-slate-600 font-medium transition-colors">
+                                                    A. La IA siempre es rápida.
+                                                </button>
+                                                <button class="w-full text-left px-5 py-4 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm xl:text-[15px] font-medium relative group overflow-hidden" id="correct-answer">
+                                                    <span class="relative z-10 transition-colors" id="answer-text">B. Existen herramientas rápidas con IA.</span>
+                                                    <div class="absolute inset-0 bg-synergen-600 w-0 transition-all duration-500 rounded-xl" id="answer-bg"></div>
+                                                    <i class="fas fa-check-circle absolute right-6 top-1/2 -translate-y-1/2 opacity-0 text-white z-10 text-lg transition-opacity" id="answer-check"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 z-20" id="test-loading">
+                                            <div class="relative w-24 h-24 mb-6">
+                                                <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+                                                <div class="absolute inset-0 rounded-full border-4 border-synergen-500 border-r-transparent animate-spin"></div>
+                                                <i class="fas fa-brain absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-synergen-600 text-2xl animate-pulse"></i>
+                                            </div>
+                                            <h3 class="text-slate-800 font-black text-2xl mb-2 tracking-tight">Estructurando Perfil</h3>
+                                            <p class="text-slate-500 font-medium text-sm text-center max-w-xs leading-relaxed">Cruzando baremos y enviando webhook final al ERP de Recursos Humanos...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SIM: Final Resolution (STEP 6) -->
+                            <div id="step-6" class="step-hidden w-full h-full flex-col justify-center items-center">
+                                <div class="w-full max-w-[420px] glass-base rounded-[2.5rem] overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-700/50 relative z-10">
+                                    
+                                    <div class="bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700/80">
+                                        <div class="px-6 py-4 flex justify-between items-center bg-slate-950/20 backdrop-blur-sm">
+                                            <div class="flex items-center gap-3">
+                                                <img src="logosynergen.png" class="h-6 object-contain">
+                                                <div class="w-1 h-5 bg-slate-700 rounded-full"></div>
+                                                <p class="font-bold text-white tracking-widest text-xs uppercase">Portal Empresa</p>
+                                            </div>
+                                            <span class="bg-green-500/20 text-green-400 border border-green-500/30 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,197,94,0.2)]"><span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span> Activo</span>
+                                        </div>
+                                        
+                                        <div class="p-6">
+                                            <div class="flex items-center gap-5 mb-6 bg-slate-800/40 p-4 rounded-2xl border border-white/5">
+                                                <div class="w-16 h-16 rounded-[1rem] bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 flex items-center justify-center text-2xl text-slate-400 shadow-xl shrink-0">
+                                                    <i class="fas fa-user-astronaut"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-white font-black text-xl leading-none mb-1">Usuario Web</h4>
+                                                    <p class="text-synergen-400 text-xs font-bold uppercase tracking-wider">Candidato Full Stack Pleno</p>
+                                                    <p class="text-slate-500 text-xs font-medium mt-1 flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> Remoto (Origen: WA)</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="bg-[#0b101a] rounded-[1.2rem] p-5 mb-8 border border-white/5 shadow-inner">
+                                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4 text-center">Score Global LIA</p>
+                                                <div class="space-y-4 text-sm text-slate-200 font-medium">
+                                                    <div class="flex justify-between items-center group">
+                                                        <span class="text-slate-400 flex items-center gap-2"><div class="w-6 h-6 rounded bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs"><i class="fas fa-brain"></i></div> Hard Skills:</span>
+                                                        <div class="flex items-center gap-3 w-[55%] justify-end"><div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="w-[95%] h-full bg-purple-500 shadow-[0_0_8px_#a855f7]"></div></div><span class="font-bold text-white text-right font-mono">95</span></div>
+                                                    </div>
+                                                    <div class="flex justify-between items-center group">
+                                                        <span class="text-slate-400 flex items-center gap-2"><div class="w-6 h-6 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs"><i class="fab fa-whatsapp"></i></div> Soft Skills Chat:</span>
+                                                        <div class="flex items-center gap-3 w-[55%] justify-end"><div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="w-[88%] h-full bg-blue-500 shadow-[0_0_8px_#3b82f6]"></div></div><span class="font-bold text-white text-right font-mono">88</span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <button class="py-3.5 px-4 bg-slate-800/80 hover:bg-slate-700 text-slate-400 rounded-xl text-sm font-bold transition-all border border-slate-700 hover:text-white flex items-center justify-center gap-2" onclick="showFinalMessage('Rechazado')">
+                                                    <i class="fas fa-times opacity-50"></i> Descartar
+                                                </button>
+                                                <button class="py-3.5 px-4 bg-synergen-600 hover:bg-synergen-500 text-white rounded-xl text-sm font-bold shadow-[0_10px_20px_rgba(20,184,166,0.2)] hover:shadow-[0_10px_25px_rgba(20,184,166,0.4)] transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2" onclick="showFinalMessage('Aprobado')">
+                                                    <i class="fas fa-check-double"></i> Agendar Entrevista
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Success Alert Overlay -->
+                                    <div id="final-overlay" class="absolute inset-0 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500 p-8 text-center z-50">
+                                        <div class="w-24 h-24 rounded-full flex items-center justify-center text-[2.5rem] mb-6 relative" id="final-icon-bg">
+                                            <div class="absolute inset-0 rounded-full animate-ping opacity-30 bg-white" id="final-ring"></div>
+                                            <i class="fas fa-check relative z-10" id="final-icon"></i>
+                                        </div>
+                                        <h3 class="text-3xl font-black text-white tracking-widest uppercase mb-4 drop-shadow" id="final-title">Aprobado</h3>
+                                        <p class="text-slate-400 text-sm leading-relaxed mb-10 max-w-[250px] mx-auto font-medium">El flujo ha finalizado de forma autónoma. Se ha enviado un correo automático de cita al candidato.</p>
+                                        <button onclick="resetDemo(true)" class="bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 px-8 py-3.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 hover:scale-105 active:scale-95 shadow-lg"><i class="fas fa-redo text-xs opacity-70"></i> Visualizar flujo nuevamente</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- TAB 2: MODELO DE NEGOCIO                       -->
+                    <!-- ============================================== -->
+                    <div id="tab-business" class="tab-content hidden flex-col p-4 sm:p-8 md:p-10 w-full max-w-6xl mx-auto min-h-full">
+                        <div class="text-center mb-10 sm:mb-12 slide-up">
+                            <span class="text-synergen-400 font-bold tracking-widest uppercase text-xs mb-3 block">Propuesta de Valor</span>
+                            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">¿Por qué LIA transforma el RH?</h2>
+                            <p class="text-slate-400 text-[15px] sm:text-base max-w-3xl mx-auto leading-relaxed">No es un software enlatado. Es una arquitectura privada de captación masiva alojada en servidores independientes. Reducimos el tiempo y el costo operativo drásticamente.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                            <div class="glass-card p-6 sm:p-8 rounded-[2rem] hover:bg-white/[0.04] transition-all duration-300 group border border-slate-700/50 hover:border-synergen-500/40">
+                                <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-server text-[#FF6D5A] text-2xl"></i>
+                                </div>
+                                <h4 class="text-white font-extrabold mb-3 text-lg sm:text-xl tracking-tight">Arquitectura VPS Propia</h4>
+                                <p class="text-slate-400 text-sm sm:text-[15px] font-light leading-relaxed">
+                                    <strong class="text-white">n8n en servidores privados</strong> (Hostgator). Cero costos por ejecución de tarea. Escala transacciones mensual sin impactar tu factura de software.
+                                </p>
+                            </div>
+
+                            <div class="glass-card p-6 sm:p-8 rounded-[2rem] hover:bg-white/[0.04] transition-all duration-300 group border border-slate-700/50 hover:border-whatsapp/40">
+                                <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform">
+                                    <i class="fab fa-whatsapp text-whatsapp text-2xl"></i>
+                                </div>
+                                <h4 class="text-white font-extrabold mb-3 text-lg sm:text-xl tracking-tight">Conversión Zero-Friction</h4>
+                                <p class="text-slate-400 text-sm sm:text-[15px] font-light leading-relaxed">
+                                    Adiós a los formularios que matan leads. El candidato hace clic en Meta y chatea por WhatsApp directamente. <strong class="text-white">La IA procesa lenguaje natural fluidamente.</strong>
+                                </p>
+                            </div>
+
+                            <div class="glass-card p-6 sm:p-8 rounded-[2rem] hover:bg-white/[0.04] transition-all duration-300 group border border-slate-700/50 hover:border-supabase/40">
+                                <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform">
+                                    <i class="fas fa-database text-supabase text-2xl"></i>
+                                </div>
+                                <h4 class="text-white font-extrabold mb-3 text-lg sm:text-xl tracking-tight">PostgreSQL & JSON</h4>
+                                <p class="text-slate-400 text-sm sm:text-[15px] font-light leading-relaxed">
+                                    Estructuramos datos conversacionales en <strong class="text-white">Supabase</strong> de inmediato. Todo está listo para integrarse a CRMs, ERPs o Power BI de la empresa contratante.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 sm:mt-12 glass-card rounded-[2rem] p-6 sm:p-10 lg:p-12 border border-synergen-500/20 flex flex-col md:flex-row items-center justify-between gap-8 sm:gap-12 relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-1/2 h-full bg-synergen-500/10 blur-[80px] -z-10"></div>
+                            <div class="max-w-xl relative z-10 text-center md:text-left">
+                                <h3 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-4 tracking-tight leading-tight">Retorno de inversión garantizado en semanas</h3>
+                                <p class="text-slate-400 mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed">El reclutador humano interviene solo al final del embudo, asegurando que su valioso tiempo se gaste en entrevistas de calidad, no revisando formatos estandarizados.</p>
+                                <ul class="space-y-4 text-left inline-block">
+                                    <li class="flex items-center gap-3 text-slate-300 font-medium text-sm sm:text-base"><div class="w-6 h-6 rounded-full bg-synergen-500/20 flex items-center justify-center text-synergen-400 shrink-0"><i class="fas fa-check text-xs"></i></div> Operación 24/7 sin límites por horario físico.</li>
+                                    <li class="flex items-center gap-3 text-slate-300 font-medium text-sm sm:text-base"><div class="w-6 h-6 rounded-full bg-synergen-500/20 flex items-center justify-center text-synergen-400 shrink-0"><i class="fas fa-check text-xs"></i></div> Filtros estrictos sin sesgos conductuales.</li>
+                                </ul>
+                            </div>
+                            <div class="flex gap-6 sm:gap-10 shrink-0 relative z-10 w-full md:w-auto justify-center">
+                                <div class="text-center bg-slate-900/50 p-6 rounded-2xl border border-slate-700 min-w-[140px] flex-1 md:flex-auto">
+                                    <p class="text-4xl sm:text-5xl font-black text-white drop-shadow">-80%</p>
+                                    <p class="text-[10px] sm:text-xs text-synergen-400 font-bold uppercase mt-3 tracking-widest">Costo Operativo</p>
+                                </div>
+                                <div class="text-center bg-slate-900/50 p-6 rounded-2xl border border-slate-700 min-w-[140px] flex-1 md:flex-auto">
+                                    <p class="text-4xl sm:text-5xl font-black text-white drop-shadow">x10</p>
+                                    <p class="text-[10px] sm:text-xs text-blue-400 font-bold uppercase mt-3 tracking-widest">Volumen Leads</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- TAB 3: ESCALABILIDAD                           -->
+                    <!-- ============================================== -->
+                    <div id="tab-scalability" class="tab-content hidden flex-col p-4 sm:p-8 md:p-10 w-full max-w-6xl mx-auto min-h-full">
+                        
+                        <div class="text-center mb-8 sm:mb-12 slide-up">
+                            <span class="text-purple-400 font-bold tracking-widest uppercase text-xs mb-3 block">Flexibilidad Tecnológica</span>
+                            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">Un Cerebro. Infinitos Perfiles.</h2>
+                            <p class="text-slate-400 text-[15px] sm:text-base max-w-3xl mx-auto leading-relaxed">Selecciona un perfil y observa cómo la IA adapta su respuesta lógicamente. La infraestructura es genérica, <strong class="text-white font-semibold">no tienes que reprogramar la aplicación</strong>, solo se ajusta el JSON del webhook para evaluar nuevas áreas.</p>
+                        </div>
+
+                        <div class="glass-card border border-slate-700 rounded-[2rem] p-4 sm:p-8 flex flex-col lg:flex-row gap-8 shadow-2xl">
+                            
+                            <!-- Left: Select inputs -->
+                            <div class="w-full lg:w-[35%] flex flex-col gap-4">
+                                <h3 class="text-slate-300 font-bold uppercase tracking-wider text-xs sm:text-sm mb-2 opacity-80 pl-1"><i class="fas fa-sliders-h mr-2"></i> Inyectar Contexto de Vacante</h3>
+                                
+                                <button onclick="setProfile('dev')" id="btn-prof-dev" class="role-btn w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-purple-500 bg-[#3b2361]/30 transition-all flex items-center justify-between group shadow-lg">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl shadow-inner"><i class="fas fa-code"></i></div>
+                                        <div><p class="font-bold text-white text-[15px] sm:text-lg tracking-wide group-hover:text-purple-400 transition-colors">Developer Senior</p><p class="text-[11px] sm:text-xs text-slate-400 font-medium">Perfil Técnico / IT</p></div>
+                                    </div>
+                                    <i class="fas fa-dot-circle text-purple-400 opacity-100 role-chk transition-opacity text-xl"></i>
+                                </button>
+
+                                <button onclick="setProfile('sales')" id="btn-prof-sales" class="role-btn w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-slate-700 hover:border-slate-600 bg-slate-900/50 hover:bg-slate-800 transition-all flex items-center justify-between group">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-400 group-hover:text-blue-400 flex items-center justify-center text-xl shadow-inner transition-colors"><i class="fas fa-chart-line"></i></div>
+                                        <div><p class="font-bold text-white text-[15px] sm:text-lg tracking-wide group-hover:text-blue-400 transition-colors">Vendedor B2B</p><p class="text-[11px] sm:text-xs text-slate-400 font-medium">Perfil Persuasión / Meta</p></div>
+                                    </div>
+                                    <i class="fas fa-dot-circle text-blue-400 opacity-0 role-chk transition-opacity text-xl"></i>
+                                </button>
+
+                                <button onclick="setProfile('warehouse')" id="btn-prof-warehouse" class="role-btn w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-slate-700 hover:border-slate-600 bg-slate-900/50 hover:bg-slate-800 transition-all flex items-center justify-between group">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-xl bg-slate-800 text-slate-400 group-hover:text-amber-400 flex items-center justify-center text-xl shadow-inner transition-colors"><i class="fas fa-boxes"></i></div>
+                                        <div><p class="font-bold text-white text-[15px] sm:text-lg tracking-wide group-hover:text-amber-400 transition-colors">Operario Almacén</p><p class="text-[11px] sm:text-xs text-slate-400 font-medium">Perfil Operativo Físico</p></div>
+                                    </div>
+                                    <i class="fas fa-dot-circle text-amber-400 opacity-0 role-chk transition-opacity text-xl"></i>
+                                </button>
+                            </div>
+
+                            <!-- Right: The "Engine" Output -->
+                            <div class="flex-1 bg-[#0b0f19] rounded-[1.5rem] border border-slate-800 p-5 sm:p-8 flex flex-col relative overflow-hidden shadow-inner">
+                                <div class="absolute top-0 right-0 p-8 sm:p-12 opacity-[0.03] pointer-events-none" id="bg-icon-scale"><i class="fas fa-brain text-[12rem] text-white"></i></div>
+                                
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 pb-4 border-b border-slate-800/80 relative z-10 gap-4">
+                                    <div>
+                                        <h3 class="font-extrabold text-white text-lg sm:text-xl flex items-center gap-2"><img src="https://n8n.io/favicon.ico" class="w-5 h-5 sm:w-6 sm:h-6 grayscale opacity-80"> Nodo Principal Base n8n</h3>
+                                        <p class="text-xs text-slate-400 mt-1">Simulación del Payload procesado por GPT-4o</p>
+                                    </div>
+                                    <div class="px-3 py-1.5 bg-[#3ECF8E]/10 border border-[#3ECF8E]/20 text-[#3ECF8E] rounded-md text-xs font-bold font-mono tracking-widest self-end sm:self-auto"><i class="fas fa-check mr-1"></i>200_OK</div>
+                                </div>
+
+                                <div class="bg-[#05080f] rounded-xl p-4 sm:p-6 border border-slate-800 font-mono text-[11px] sm:text-[13px] shadow-inner transition-all duration-300 relative z-10 flex-1 flex flex-col" id="scale-code-box">
+                                    <div class="flex gap-2 mb-4 border-b border-slate-800 pb-3"><div class="w-3 h-3 rounded-full bg-red-500/50"></div><div class="w-3 h-3 rounded-full bg-amber-500/50"></div><div class="w-3 h-3 rounded-full bg-green-500/50"></div></div>
+                                    
+                                    <div id="code-dev" class="code-view block flex-1 break-words leading-relaxed whitespace-pre-wrap">
+<span class="text-purple-400">"agent_role"</span>: <span class="text-green-300">"Tech Recruiter Nivel Avanzado"</span>,
+<span class="text-purple-400">"instructions"</span>: <span class="text-green-300">"Evalúa conocimientos en microservicios, bases de datos no relacionales y calidad de código. Ignora por completo habilidades sociales excesivas o small-talk."</span>,
+<span class="text-purple-400">"test_id"</span>: <span class="text-blue-300 border border-blue-500/30 bg-blue-500/10 px-1 rounded">"logico_avanzado_08"</span>,
+<span class="text-purple-400">"passing_score"</span>: <span class="text-yellow-300">85</span>
+                                    </div>
+
+                                    <div id="code-sales" class="code-view hidden flex-1 break-words leading-relaxed whitespace-pre-wrap">
+<span class="text-blue-400">"agent_role"</span>: <span class="text-green-300">"Director de Ventas Agresivo"</span>,
+<span class="text-blue-400">"instructions"</span>: <span class="text-green-300">"Evalúa el lenguaje persuasivo, tiempos de respuesta ultra-rápidos, energía en la conversación y manejo de objeciones. Plantea que el producto es muy caro para ver su respuesta real."</span>,
+<span class="text-blue-400">"test_id"</span>: <span class="text-purple-300 border border-purple-500/30 bg-purple-500/10 px-1 rounded">"test_disc_ventas"</span>,
+<span class="text-blue-400">"passing_score"</span>: <span class="text-yellow-300">75</span>
+                                    </div>
+
+                                    <div id="code-warehouse" class="code-view hidden flex-1 break-words leading-relaxed whitespace-pre-wrap">
+<span class="text-amber-400">"agent_role"</span>: <span class="text-green-300">"Coordinador Operativo Directo"</span>,
+<span class="text-amber-400">"instructions"</span>: <span class="text-green-300">"Haz validaciones rápidas. Pregunta disponibilidad para rolar 3 turnos, capacidad de carga física constante y medio de transporte hacia la zona industrial Norte. Responde simple."</span>,
+<span class="text-amber-400">"test_id"</span>: <span class="text-rose-300 border border-rose-500/30 bg-rose-500/10 px-1 rounded">"basico_atencion"</span>,
+<span class="text-amber-400">"passing_score"</span>: <span class="text-yellow-300">50</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex items-start gap-4 relative z-10 font-sans">
+                                    <i class="fas fa-info-circle text-slate-400 mt-1"></i>
+                                    <p class="text-[13px] sm:text-sm text-slate-300 leading-relaxed font-medium">
+                                        ¿Nueva sucursal? ¿Nuevo puesto directivo? Modificar las variables de entorno para instruir a la Inteligencia Artificial toma tan solo minutos. No existen costos de "re-desarrollo".
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================== -->
+                    <!-- TAB 4: MANTENIMIENTO Y PARNTERSHIP (NUEVA)     -->
+                    <!-- ============================================== -->
+                    <div id="tab-tech" class="tab-content hidden flex-col p-4 sm:p-8 md:p-10 w-full max-w-6xl mx-auto min-h-full">
+                        
+                        <div class="text-center mb-10 sm:mb-14 slide-up">
+                            <span class="text-amber-500 font-bold tracking-widest uppercase text-[10px] sm:text-xs mb-3 block">Alianza Estratégica Completa</span>
+                            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">Operación. Ventas. Tecnología.</h2>
+                            <p class="text-slate-400 text-[14px] sm:text-base max-w-3xl mx-auto leading-relaxed">Te garantizamos éxito a través de una división de labores experta. El poder de LIA no recae solo en el código, sino en quién te acompaña y soporta día a día para que tu negocio crezca.</p>
+                        </div>
+
+                        <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative z-10 max-w-5xl mx-auto w-full">
+                            
+                            <!-- Synergen Block -->
+                            <div class="flex-1 glass-card w-full rounded-[2.5rem] p-8 sm:p-10 border border-slate-700/50 relative overflow-hidden transition-all hover:bg-white/[0.02]">
+                                <div class="absolute -top-10 -right-10 w-40 h-40 bg-synergen-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+                                <img src="logosynergen.png" alt="Synergen Talent" class="h-10 sm:h-12 object-contain mb-8 filter drop-shadow">
+                                <h3 class="text-2xl font-black text-white mb-2 tracking-tight">Comercialización & RH</h3>
+                                <p class="text-synergen-400 text-sm font-bold uppercase tracking-wider mb-6">Expertise Humano</p>
+                                <p class="text-slate-400 text-[15px] leading-relaxed mb-6 font-light">
+                                    Synergen comercializa de frente la plataforma de LIA ofreciendo consultoría real sobre recursos humanos. Son la cara del producto y tu socio director para implementar reclutamiento efectivo en tu empresa.
+                                </p>
+                                <ul class="space-y-3">
+                                    <li class="flex items-center gap-3 text-slate-300 text-sm font-medium"><div class="w-6 h-6 rounded-lg bg-synergen-500/20 text-synergen-400 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div> Trato B2B y estrategias de captación.</li>
+                                    <li class="flex items-center gap-3 text-slate-300 text-sm font-medium"><div class="w-6 h-6 rounded-lg bg-synergen-500/20 text-synergen-400 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div> Implementación de procesos de RH.</li>
+                                    <li class="flex items-center gap-3 text-slate-300 text-sm font-medium"><div class="w-6 h-6 rounded-lg bg-synergen-500/20 text-synergen-400 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div> Consultoría y Onboarding corporativo.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Union Icon -->
+                            <div class="hidden lg:flex w-16 h-16 rounded-full bg-slate-800 border-2 border-slate-700 items-center justify-center text-slate-400 text-xl shadow-xl shrink-0 z-10">
+                                <i class="fas fa-link"></i>
+                            </div>
+
+                            <!-- Partum Block -->
+                            <div class="flex-1 glass-card w-full rounded-[2.5rem] p-8 sm:p-10 border border-slate-700/50 relative overflow-hidden transition-all hover:bg-white/[0.02]">
+                                <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+                                <img src="logopartum.png" alt="Partum Design" class="h-8 sm:h-10 object-contain mb-8 filter drop-shadow">
+                                <h3 class="text-2xl font-black text-white mb-2 tracking-tight">Software, Diseño & Escala</h3>
+                                <p class="text-blue-400 text-sm font-bold uppercase tracking-wider mb-6">Partner Tecnológico</p>
+                                <p class="text-slate-400 text-[15px] leading-relaxed mb-6 font-light">
+                                    Partum Design es la empresa de Marketing y Tecnología encargada del <strong class="text-white">seguimiento y mantenimiento real operativo</strong>. Velan porque los servidores, modelos UI/UX de LIA y bases de datos funcionen impecablemente antes, durante y en producción a gran escala.
+                                </p>
+                                <ul class="space-y-3">
+                                    <li class="flex items-center gap-3 text-slate-300 text-sm font-medium"><div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div> Arquitectura Backend (n8n, Supabase).</li>
+                                    <li class="flex items-center gap-3 text-slate-300 text-sm font-medium"><div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div> Mantenimiento VPS y APIs (OpenAI/Meta).</li>
+                                    <li class="flex items-center gap-3 text-slate-300 text-sm font-medium"><div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div> UI/UX Frontend y marketing analítico.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS CORE -->
+    <script>
+        // App Start / Close
+        function startApp() {
+            const landing = document.getElementById('landing-page');
+            const overlay = document.getElementById('app-overlay');
+            
+            landing.style.opacity = '0';
+            setTimeout(() => {
+                landing.style.display = 'none';
+                overlay.classList.remove('hidden');
+                
+                void overlay.offsetWidth;
+                overlay.classList.remove('opacity-0');
+                overlay.classList.add('opacity-100');
+                
+                if(currentStep === 1) updateTimeline(1);
+            }, 600);
+        }
+
+        function closeApp() {
+            const overlay = document.getElementById('app-overlay');
+            const landing = document.getElementById('landing-page');
+            
+            overlay.classList.remove('opacity-100');
+            overlay.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                landing.style.display = 'flex';
+                
+                void landing.offsetWidth;
+                landing.style.opacity = '1';
+                
+                resetDemo(true);
+                switchTab('tab-workflow');
+            }, 500);
+        }
+
+        // Tabs Logic
+        function switchTab(targetId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active', 'flex');
+                el.classList.add('hidden');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-bold text-slate-400 hover:text-white transition-all flex items-center gap-2 border border-transparent snap-center';
+            });
+            
+            const content = document.getElementById(targetId);
+            content.classList.remove('hidden');
+            content.classList.add('active', 'flex');
+            
+            const activeBtn = document.querySelector(`[data-target="${targetId}"]`);
+            if(activeBtn) {
+                activeBtn.className = 'tab-btn active shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-bold text-white bg-slate-800 shadow-md transition-all flex items-center gap-2 border border-slate-600 snap-center';
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); // For mobile scrolling tabbar
+            }
+        }
+
+        // Scalability Logic
+        function setProfile(role) {
+            document.querySelectorAll('.role-btn').forEach(b => {
+                b.className = 'role-btn w-full text-left p-4 sm:p-5 rounded-2xl border-2 border-slate-700 hover:border-slate-600 bg-slate-900/50 hover:bg-slate-800 transition-all flex items-center justify-between group';
+                b.querySelector('i.role-chk').style.opacity = '0';
+                b.querySelector('div > p.group-hover\\:text-purple-400, p.group-hover\\:text-blue-400, p.group-hover\\:text-amber-400')?.classList.remove('text-purple-400','text-blue-400','text-amber-400');
+                
+                const iconContainer = b.querySelector('div > div.w-12');
+                iconContainer.className = 'w-12 h-12 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center text-xl shadow-inner transition-colors group-hover:text-white';
+            });
+
+            document.querySelectorAll('.code-view').forEach(c => {
+                c.classList.remove('block');
+                c.classList.add('hidden');
+            });
+
+            const btn = document.getElementById(`btn-prof-${role}`);
+            const code = document.getElementById(`code-${role}`);
+            const chk = btn.querySelector('i.role-chk');
+            const iconContainer = btn.querySelector('div > div.w-12');
+            const textHeader = btn.querySelector('div > p.font-bold');
+
+            let colorStr, borderStr, codeColor;
+
+            if(role === 'dev') { colorStr = 'text-purple-400'; borderStr = 'border-purple-500'; codeColor = 'bg-purple-500/20'; }
+            if(role === 'sales') { colorStr = 'text-blue-400'; borderStr = 'border-blue-500'; codeColor = 'bg-blue-500/20'; }
+            if(role === 'warehouse') { colorStr = 'text-amber-400'; borderStr = 'border-amber-500'; codeColor = 'bg-amber-500/20'; }
+
+            btn.className = `role-btn w-full text-left p-4 sm:p-5 rounded-2xl border-2 ${borderStr} bg-slate-800/80 transition-all flex items-center justify-between group shadow-lg scale-[1.02]`;
+            chk.style.opacity = '1';
+            chk.className = `fas fa-dot-circle opacity-100 role-chk transition-opacity text-xl ${colorStr}`;
+            textHeader.classList.add(colorStr);
+            iconContainer.className = `w-12 h-12 rounded-xl ${codeColor} ${colorStr} flex items-center justify-center text-xl shadow-inner`;
+
+            code.classList.remove('hidden');
+            code.classList.add('block', 'fade-in');
+
+            const box = document.getElementById('scale-code-box');
+            box.style.transform = 'scale(0.98)';
+            setTimeout(() => box.style.transform = 'scale(1)', 150);
+        }
+        
+        // ============================================
+        // SIMULATOR LOGIC
+        // ============================================
+        let currentStep = 1;
+        const totalSteps = 6;
+        let isSimulating = false;
+
+        function updateTimeline(step) {
+            const percentage = ((step - 1) / (totalSteps - 1)) * 100;
+            const limit = 8; // Because of left-[8%] in HTML
+            const actualPerc = limit + (percentage * (1 - (limit*2/100)));
+            document.getElementById('progress-line').style.width = `max(0%, calc(${percentage}% - ${limit*2}%))`;
+            
+            for(let i=1; i<=totalSteps; i++) {
+                const navItem = document.getElementById(`nav-step-${i}`);
+                const iconBox = document.getElementById(`icon-step-${i}`);
+                const textBox = document.getElementById(`text-step-${i}`);
+                const n8nIcon = document.getElementById('icon-n8n-img');
+                
+                if(i < step) {
+                    navItem.classList.remove('opacity-50');
+                    iconBox.className = 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-synergen-500 text-white flex items-center justify-center text-lg sm:text-xl transition-all duration-300 shadow-[0_0_15px_rgba(20,184,166,0.5)]';
+                    textBox.classList.add('text-synergen-400');
+                    textBox.classList.remove('text-slate-500', 'text-white');
+                    if(i===3 && n8nIcon) n8nIcon.className = "w-5 h-5 sm:w-6 sm:h-6 opacity-100 invert";
+                } else if (i === step) {
+                    navItem.classList.remove('opacity-50');
+                    if(step === 2) iconBox.className = 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-whatsapp text-white flex items-center justify-center text-lg sm:text-xl shadow-[0_0_20px_rgba(37,211,102,0.4)] ring-[1.5px] sm:ring-2 ring-white/20 scale-105 sm:scale-110 transition-all';
+                    else if(step === 3) iconBox.className = 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#FF6D5A] text-white flex items-center justify-center text-lg sm:text-xl shadow-[0_0_20px_rgba(255,109,90,0.4)] ring-[1.5px] sm:ring-2 ring-white/20 scale-105 sm:scale-110 transition-all';
+                    else if(step === 4) iconBox.className = 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#3ECF8E] text-white flex items-center justify-center text-lg sm:text-xl shadow-[0_0_20px_rgba(62,207,142,0.4)] ring-[1.5px] sm:ring-2 ring-white/20 scale-105 sm:scale-110 transition-all';
+                    else iconBox.className = 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white text-slate-900 flex items-center justify-center text-lg sm:text-xl shadow-[0_0_20px_rgba(255,255,255,0.4)] ring-[1.5px] sm:ring-2 ring-white/20 scale-105 sm:scale-110 transition-all';
+                    
+                    if(step===3 && n8nIcon) n8nIcon.className = "w-5 h-5 sm:w-6 sm:h-6 opacity-100 invert";
+                    textBox.classList.add('text-white');
+                    textBox.classList.remove('text-slate-500', 'text-synergen-400');
+                    
+                    navItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); // Mobile focus step
+                } else {
+                    navItem.classList.add('opacity-50');
+                    iconBox.className = 'w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center text-lg sm:text-xl transition-all duration-300 border border-slate-700 shadow-lg';
+                    textBox.classList.add('text-slate-500');
+                    textBox.classList.remove('text-white', 'text-synergen-400');
+                    if(i===3 && n8nIcon) n8nIcon.className = "w-5 h-5 sm:w-6 sm:h-6 opacity-60 grayscale transition-all";
+                }
+            }
+        }
+
+        function hideAllSteps() {
+            for(let i=1; i<=totalSteps; i++) {
+                const el = document.getElementById(`step-${i}`);
+                el.classList.remove('step-active');
+                el.classList.add('step-hidden');
+            }
+        }
+
+        function goToStep(step) {
+            if(step < 1 || step > totalSteps || isSimulating) return;
+            hideAllSteps();
+            currentStep = step;
+            updateTimeline(currentStep);
+            
+            const stepEl = document.getElementById(`step-${currentStep}`);
+            stepEl.classList.remove('step-hidden');
+            stepEl.classList.add('step-active');
+            
+            executeStepLogic(currentStep);
+        }
+
+        const waStatus = document.getElementById('wa-status');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const chatContainer = document.getElementById('chat-container');
+
+        function appendWaMessage(type, text) {
+            const alignClass = type === 'rec' ? 'self-start' : 'self-end';
+            const bubbleClass = type === 'rec' ? 'chat-bubble-receive' : 'chat-bubble-send';
+            const marginClass = type === 'rec' ? 'mr-10' : 'ml-10';
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const msgHtml = `
+                <div class="flex flex-col mb-4 fade-in ${alignClass} ${marginClass} z-10 w-max max-w-[85%]">
+                    <div class="px-3.5 py-2.5 text-[14px] leading-snug ${bubbleClass} shadow">
+                        ${text}
+                        <span class="text-[9px] text-white/50 ml-3 float-right mt-1.5 flex items-center gap-1">${time} ${type==='send'?'<i class="fas fa-check-double text-blue-300"></i>':''}</span>
+                    </div>
+                </div>
+            `;
+            typingIndicator.insertAdjacentHTML('beforebegin', msgHtml);
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+        }
+
+        function toggleTyping(show) {
+            if(show) {
+                waStatus.innerText = 'escribiendo...';
+                typingIndicator.classList.remove('hidden');
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            } else {
+                waStatus.innerText = 'en línea';
+                typingIndicator.classList.add('hidden');
+            }
+        }
+
+        function executeStepLogic(step) {
+            if(step === 2) {
+                isSimulating = true;
+                const msgs = chatContainer.querySelectorAll('.flex-col.mb-4');
+                msgs.forEach(m => m.remove());
+                document.getElementById('chat-actions').classList.add('hidden');
+
+                setTimeout(() => {
+                    toggleTyping(true);
+                    setTimeout(() => {
+                        toggleTyping(false);
+                        appendWaMessage("rec", "Hola 👋 Soy la IA de Synergen Talent.");
+                        setTimeout(() => {
+                            toggleTyping(true);
+                            setTimeout(() => {
+                                toggleTyping(false);
+                                appendWaMessage("rec", "¿Te interesó la vacante Tech? Podemos aplicar por aquí en tiempo real de forma segura. Envía tu respuesta para comenzar. 👇");
+                                document.getElementById('chat-actions').classList.remove('hidden');
+                                document.getElementById('chat-actions').classList.add('flex');
+                                isSimulating = false;
+                            }, 1500);
+                        }, 800);
+                    }, 1000);
+                }, 500);
+            }
+            if(step === 3) {
+                isSimulating = true;
+                ['line-1','line-2a','line-2b', 'line-mob'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.style.width = '0%';
+                });
+                if(document.getElementById('line-mob')) document.getElementById('line-mob').style.height = '0%';
+                ['node-webhook','node-ai','node-db','node-reply'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.className = el.className.replace(/bg-\[[^\]]+\]\/[0-9]+|bg-\w+-[0-9]+\/[0-9]+|border-\[[^\]]+\]|border-\w+-[0-9]+|text-\[[^\]]+\]|text-\w+-[0-9]+/g, '');
+                    el.classList.add('bg-slate-800', 'border-slate-600', 'text-slate-400');
+                });
+                document.getElementById('n8n-gpt-label').style.opacity = '0';
+
+                setTimeout(() => {
+                    const wh = document.getElementById('node-webhook');
+                    wh.classList.remove('bg-slate-800','border-slate-600','text-slate-400');
+                    wh.classList.add('bg-green-500/20','border-green-500','text-green-400');
+                    document.getElementById('line-1').style.width = '100%';
+                    if(document.getElementById('line-mob')) document.getElementById('line-mob').style.height = '100%';
+
+                    setTimeout(() => {
+                        const ai = document.getElementById('node-ai');
+                        ai.classList.remove('bg-slate-800','border-slate-600','text-slate-400');
+                        ai.classList.add('bg-[#FF6D5A]/20','border-[#FF6D5A]','text-[#FF6D5A]','scale-110','shadow-[0_0_30px_rgba(255,109,90,0.5)]');
+                        document.getElementById('n8n-gpt-label').style.opacity = '1';
+
+                        setTimeout(() => {
+                            ai.classList.remove('scale-110');
+                            const l2a = document.getElementById('line-2a');
+                            const l2b = document.getElementById('line-2b');
+                            if(l2a) l2a.style.width = '100%';
+                            if(l2b) l2b.style.width = '100%';
+
+                            setTimeout(() => {
+                                const db = document.getElementById('node-db');
+                                const rep = document.getElementById('node-reply');
+                                db.classList.remove('bg-slate-800','border-slate-600','text-slate-400');
+                                db.classList.add('bg-[#3ECF8E]/20','border-[#3ECF8E]','text-[#3ECF8E]');
+                                rep.classList.remove('bg-slate-800','border-slate-600','text-slate-400');
+                                rep.classList.add('bg-whatsapp/20','border-whatsapp','text-whatsapp');
+
+                                setTimeout(() => { isSimulating=false; goToStep(4); }, 1500);
+                            }, 800);
+                        }, 1500);
+                    }, 800);
+                }, 500);
+            }
+            if(step === 4) {
+                isSimulating = true;
+                const newRow = document.getElementById('db-new-row');
+                const flash = document.getElementById('db-flash');
+                newRow.style.opacity = '0';
+                newRow.style.transform = 'translateY(15px)';
+
+                setTimeout(() => {
+                    newRow.style.transition = 'all 0.5s ease';
+                    newRow.style.opacity = '1';
+                    newRow.style.transform = 'translateY(0)';
+                    
+                    flash.className = "absolute inset-0 border-[3px] border-[#3ECF8E] bg-[#3ECF8E]/5 pointer-events-none rounded-2xl transition-all duration-300";
+                    setTimeout(() => {
+                         flash.className = "absolute inset-0 border-[3px] border-[#3ECF8E]/0 pointer-events-none rounded-2xl transition-all duration-300";
+                         setTimeout(() => { isSimulating=false; goToStep(5); }, 2000);
+                    }, 500);
+                }, 1000);
+            }
+            if(step === 5) {
+                isSimulating = true;
+                setTimeout(() => {
+                    const btn = document.getElementById('correct-answer');
+                    btn.classList.replace('border-slate-100', 'border-synergen-600');
+                    document.getElementById('answer-bg').style.width = '100%';
+                    document.getElementById('answer-text').classList.replace('text-slate-600', 'text-white');
+                    
+                    setTimeout(() => {
+                        document.getElementById('answer-check').style.opacity = '1';
+                        setTimeout(() => {
+                            document.getElementById('test-loading').style.opacity = '1';
+                            setTimeout(() => { isSimulating=false; goToStep(6); }, 2500);
+                        }, 1000);
+                    }, 400);
+                }, 1500);
+            }
+            if(step === 6) {
+                isSimulating = false;
+                document.getElementById('final-overlay').style.opacity = '0';
+                document.getElementById('final-overlay').style.pointerEvents = 'none';
+            }
+        }
+
+        function sendUserMessage(text) {
+            document.getElementById('chat-actions').classList.add('hidden');
+            appendWaMessage("send", text);
+            setTimeout(() => {
+                toggleTyping(true);
+                setTimeout(() => {
+                    toggleTyping(false);
+                    appendWaMessage("rec", "¡Perfecto! Procesaremos tu perfil al 100% ahora mismo. Todo de forma transparente. 🚀");
+                    setTimeout(() => { goToStep(3); }, 2000);
+                }, 1500);
+            }, 600);
+        }
+
+        function showFinalMessage(decision) {
+            const overlay = document.getElementById('final-overlay');
+            const titleEl = document.getElementById('final-title');
+            const iconBg = document.getElementById('final-icon-bg');
+            const iconEl = document.getElementById('final-icon');
+            const ringEl = document.getElementById('final-ring');
+
+            titleEl.innerText = decision;
+
+            if(decision === 'Rechazado') {
+                iconBg.className = 'w-24 h-24 rounded-full flex items-center justify-center text-[2.5rem] mb-6 relative shadow-[0_0_50px_rgba(239,68,68,0.4)] bg-red-500 text-white transform scale-110 transition-transform';
+                iconEl.className = 'fas fa-times relative z-10';
+                ringEl.className = 'absolute inset-0 rounded-full animate-ping opacity-20 bg-white';
+                titleEl.className = 'text-3xl font-black text-red-500 tracking-widest uppercase mb-4 drop-shadow';
+            } else {
+                iconBg.className = 'w-24 h-24 rounded-full flex items-center justify-center text-[2.5rem] mb-6 relative shadow-[0_0_50px_rgba(20,184,166,0.5)] bg-synergen-500 text-white transform scale-110 transition-transform';
+                iconEl.className = 'fas fa-check relative z-10';
+                ringEl.className = 'absolute inset-0 rounded-full animate-ping opacity-30 bg-white';
+                titleEl.className = 'text-3xl font-black text-synergen-400 tracking-widest uppercase mb-4 drop-shadow';
+            }
+
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
+        }
+
+        function resetDemo(force = false) {
+            if(isSimulating && !force) return;
+            isSimulating = false;
+            
+            document.getElementById('test-loading').style.opacity = '0';
+            const btnAnswer = document.getElementById('correct-answer');
+            if(btnAnswer) btnAnswer.classList.replace('border-synergen-600', 'border-slate-100');
+            const bgAnswer = document.getElementById('answer-bg');
+            if(bgAnswer) bgAnswer.style.width = '0%';
+            const textAnswer = document.getElementById('answer-text');
+            if(textAnswer) textAnswer.classList.replace('text-white', 'text-slate-600');
+            const checkAnswer = document.getElementById('answer-check');
+            if(checkAnswer) checkAnswer.style.opacity = '0';
+            
+            goToStep(1);
+        }
+
+    </script>
+</body>
+</html>
