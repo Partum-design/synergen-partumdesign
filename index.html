@@ -17,7 +17,8 @@
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'], },
                     colors: {
-                        synergen: { 50: '#f0fdfa', 100: '#ccfbf1', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 900: '#134e4a', },
+                        synergen: { 50: '#f4f2ff', 100: '#e8e2ff', 400: '#6a5af9', 500: '#5a47d6', 600: '#4b3cc8', 900: '#241a57', },
+                        partum: { 400: '#2b6ce6', 500: '#1e4fb8', 600: '#173f95', dark: '#1f2937', cyan: '#0f8ccf', orange: '#f4a142', pink: '#e66ba9' },
                         n8n: '#FF6D5A', supabase: '#3ECF8E', meta: '#1877F2', whatsapp: '#25D366'
                     },
                     animation: {
@@ -40,6 +41,17 @@
         }
     </script>
     <style>
+        :root {
+            --brand-syn-1: #6a5af9;
+            --brand-syn-2: #4b3cc8;
+            --brand-partum-blue: #2b6ce6;
+            --brand-partum-cyan: #0f8ccf;
+            --brand-partum-orange: #f4a142;
+            --brand-partum-pink: #e66ba9;
+            --brand-dark-1: #081224;
+            --brand-dark-2: #0f1d35;
+        }
+
         /* Base Animations */
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
         .slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
@@ -67,16 +79,17 @@
         
         /* Glassmorphism Classes */
         .glass-base {
-            background: rgba(11, 15, 25, 0.7);
+            background: linear-gradient(155deg, rgba(11, 20, 38, 0.86), rgba(16, 30, 53, 0.78));
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            box-shadow: 0 14px 45px rgba(2, 8, 23, 0.35);
         }
         .glass-card {
-            background: rgba(20, 27, 40, 0.6);
+            background: linear-gradient(155deg, rgba(16, 27, 47, 0.82), rgba(20, 35, 58, 0.72));
             backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 14px 42px rgba(2, 8, 23, 0.34);
         }
 
         /* Simulador Steps */
@@ -87,9 +100,10 @@
             animation: flowMove 2.5s linear infinite;
         }
         .process-canvas {
-            background: radial-gradient(circle at 20% 10%, rgba(20,184,166,0.14), transparent 45%),
-                        radial-gradient(circle at 90% 80%, rgba(59,130,246,0.14), transparent 45%),
-                        rgba(15, 23, 42, 0.55);
+            background: radial-gradient(circle at 12% 12%, rgba(106,90,249,0.26), transparent 46%),
+                        radial-gradient(circle at 88% 18%, rgba(15,140,207,0.24), transparent 42%),
+                        radial-gradient(circle at 50% 100%, rgba(230,107,169,0.18), transparent 40%),
+                        rgba(10, 19, 37, 0.66);
             border-color: rgba(148, 163, 184, 0.2);
         }
         .stepper-node {
@@ -115,9 +129,12 @@
         .node-pulse::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: inherit; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; z-index: -1; opacity: 0.6; }
 
         /* Background Gradient Animation */
-        .aurora-bg { position: fixed; inset: -50%; z-index: -2; background: linear-gradient(to bottom right, #020617, #060e20); }
-        .aurora-glow-1 { position: absolute; top: 20%; left: 30%; width: 45vw; height: 45vw; background: radial-gradient(circle, rgba(20,184,166,0.13) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; opacity: 0.8; }
-        .aurora-glow-2 { position: absolute; bottom: 10%; right: 20%; width: 55vw; height: 55vw; background: radial-gradient(circle, rgba(45,100,240,0.12) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; opacity: 0.8; }
+        .aurora-bg { position: fixed; inset: -50%; z-index: -2; background: radial-gradient(circle at 15% 15%, #142a4f, #070f1e 55%, #050a14 100%); }
+        .aurora-glow-1 { position: absolute; top: 16%; left: 26%; width: 48vw; height: 48vw; background: radial-gradient(circle, rgba(106,90,249,0.26) 0%, rgba(0,0,0,0) 72%); border-radius: 50%; opacity: 0.82; }
+        .aurora-glow-2 { position: absolute; bottom: 5%; right: 14%; width: 58vw; height: 58vw; background: radial-gradient(circle, rgba(43,108,230,0.23) 0%, rgba(0,0,0,0) 74%); border-radius: 50%; opacity: 0.85; }
+        .aurora-glow-3 { position: absolute; top: 52%; left: 46%; width: 38vw; height: 38vw; background: radial-gradient(circle, rgba(244,161,66,0.15) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; opacity: 0.7; }
+
+        i.fas, i.fab { line-height: 1; }
 
         /* Force white rendering for partner logos */
         .logo-white { filter: brightness(0) invert(1) contrast(1.1) !important; }
@@ -129,6 +146,7 @@
     <div class="aurora-bg">
         <div class="aurora-glow-1 animate-aurora"></div>
         <div class="aurora-glow-2 animate-aurora" style="animation-direction: reverse; animation-duration: 30s;"></div>
+        <div class="aurora-glow-3 animate-aurora" style="animation-duration: 34s;"></div>
     </div>
     <div class="fixed inset-0 z-[-1] opacity-[0.03]" style="background-image: linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px); background-size: 30px 30px;"></div>
 
@@ -145,7 +163,7 @@
             
             <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.1] tracking-tighter mix-blend-plus-lighter">
                 Evoluciona tu <br class="hidden sm:block">
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-synergen-400 via-blue-400 to-indigo-500 pb-2 drop-shadow-sm">Reclutamiento</span>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-synergen-400 via-partum-400 to-partum-pink pb-2 drop-shadow-sm">Reclutamiento</span>
             </h1>
             
             <p class="text-base sm:text-lg lg:text-xl text-slate-400 font-light max-w-xl mx-auto leading-relaxed">
@@ -153,8 +171,8 @@
             </p>
             
             <div class="pt-8">
-                <button onclick="startApp()" class="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white text-slate-950 rounded-full font-bold text-base sm:text-lg overflow-hidden transition-transform hover:scale-[1.02] active:scale-95 shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:shadow-[0_0_60px_rgba(20,184,166,0.5)] w-full sm:w-auto">
-                    <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-synergen-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></span>
+                <button onclick="startApp()" class="group relative inline-flex items-center justify-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white text-slate-950 rounded-full font-bold text-base sm:text-lg overflow-hidden transition-transform hover:scale-[1.02] active:scale-95 shadow-[0_0_40px_rgba(90,71,214,0.35)] hover:shadow-[0_0_60px_rgba(43,108,230,0.45)] w-full sm:w-auto">
+                    <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-synergen-400 via-partum-400 to-partum-orange opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></span>
                     <i class="fas fa-play text-synergen-500 group-hover:text-white transition-colors relative z-10 top-[1px]"></i>
                     <span class="relative z-10 group-hover:text-white transition-colors tracking-wide">Iniciar Experiencia LIA</span>
                 </button>
@@ -230,7 +248,7 @@
                         <div class="w-full overflow-x-auto custom-scrollbar pb-4 mb-4 sm:mb-8 sm:overflow-visible">
                             <div class="glass-card rounded-[1.5rem] p-3 sm:p-4 flex justify-between items-center relative z-10 max-w-4xl mx-auto w-full min-w-[500px]">
                                 <div class="absolute inset-y-0 left-[8%] right-[8%] top-1/2 -translate-y-1/2 h-1 bg-slate-800 -z-10 rounded-full"></div>
-                                <div class="absolute inset-y-0 left-[8%] top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-synergen-400 via-cyan-300 to-blue-500 transition-all duration-700 ease-in-out z-0 rounded-full shadow-[0_0_18px_rgba(20,184,166,0.55)] progress-line-animated" id="progress-line" style="width: 0%"></div>
+                                <div class="absolute inset-y-0 left-[8%] top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-synergen-400 via-partum-400 to-partum-orange transition-all duration-700 ease-in-out z-0 rounded-full shadow-[0_0_18px_rgba(106,90,249,0.5)] progress-line-animated" id="progress-line" style="width: 0%"></div>
                                 
                                 <div class="flex flex-col items-center relative z-10 cursor-pointer group w-1/6" id="nav-step-1" onclick="if(currentStep>1) resetDemo(true)">
                                     <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg sm:text-xl transition-all duration-300 border border-slate-600 shadow-lg stepper-node" id="icon-step-1"><i class="fas fa-bullhorn"></i></div>
@@ -272,7 +290,7 @@
                                             </div>
                                             <div>
                                                 <p class="font-bold text-[14px] text-[#E4E6EB] leading-none">Synergen Talent</p>
-                                                <p class="text-[12px] text-[#B0B3B8] flex items-center gap-1 mt-1">Publicidad <i class="fas fa-globe-americas text-[10px]"></i></p>
+                                                <p class="text-[12px] text-[#B0B3B8] flex items-center gap-1 mt-1">Publicidad <i class="fas fa-earth-americas text-[10px]"></i></p>
                                             </div>
                                         </div>
                                         <i class="fas fa-ellipsis-h text-[#B0B3B8]"></i>
@@ -318,7 +336,7 @@
                                         <p class="text-xs text-whatsapp/90 font-medium truncate" id="wa-status">en línea</p>
                                     </div>
                                     <div class="flex gap-4 text-slate-300 text-lg mr-2">
-                                        <i class="fas fa-video"></i><i class="fas fa-phone-alt"></i>
+                                        <i class="fas fa-video"></i><i class="fas fa-phone"></i>
                                     </div>
                                 </div>
                                 
